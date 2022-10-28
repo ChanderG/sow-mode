@@ -17,6 +17,18 @@
   (org-narrow-to-subtree))
 
 (defun sow-jump-entry ()
+  "Jump to entry under cursor. If nothing found, run wild card jump."
+  (interactive)
+  (if (eq (car (get-text-property (point) 'face)) 'org-agenda-clocking)
+      (let* ((beg (next-property-change (point)))
+             (end (previous-property-change (+ (point) 1)))
+             (match (buffer-substring-no-properties beg end)))
+        (goto-char (org-find-exact-headline-in-buffer match))
+        (org-narrow-to-subtree)
+        (org-show-subtree))
+    (sow-jump-entry-wildcard)))
+
+(defun sow-jump-entry-wildcard ()
   "Jump to an entry."
   (interactive)
   ;; this widening is required for org-goto to work correctly
@@ -66,6 +78,9 @@
       (progn
         (setq org-goto-interface (quote outline-path-completion))
         (sow-setup-highlights))
+    (progn
+      (unhighlight-regexp t)
+      )
       ))
 
 (provide 'sow-mode)
