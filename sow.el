@@ -13,6 +13,7 @@
                                  (thing-at-point 'word)))))
   (org-insert-heading-after-current)
   (insert entry)
+  (highlight-regexp entry 'org-agenda-clocking)
   (org-narrow-to-subtree))
 
 (defun sow-jump-entry ()
