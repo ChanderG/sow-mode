@@ -1,5 +1,7 @@
 ;; Whether to base on evil. Set to 't' by default. Setting to nil, will make toodoo work with plain emacs.
 (defvar sow-evil-base t)
+;; variable tracking the last entry
+(defvar sow-last-entry nil)
 
 ;===============================================================================
 ;;; Sow Core Functions
@@ -11,14 +13,31 @@
                              (if (use-region-p)
                                  (buffer-substring-no-properties (mark) (point))
                                  (thing-at-point 'word)))))
+  (setq sow-last-entry (org-get-heading t t t t))
   (org-insert-heading-after-current)
   (insert entry)
   (highlight-regexp entry 'org-agenda-clocking)
   (org-narrow-to-subtree))
 
+(defun sow-jump-last-entry ()
+  "Jump to last editing entry."
+  (interactive)
+  (let ((entry sow-last-entry))
+    ;; update last entry pointer
+    (setq sow-last-entry (org-get-heading t t t t))
+    ;; need to expand scope
+    (widen)
+    (org-overview)
+    ;; otherwise, this search below fails
+    (goto-char (org-find-exact-headline-in-buffer entry))
+    (org-narrow-to-subtree)
+    (org-show-subtree)))
+
 (defun sow-jump-entry ()
   "Jump to entry under cursor. If nothing found, run wild card jump."
   (interactive)
+  ;; update last entry pointer
+  (setq sow-last-entry (org-get-heading t t t t))
   (if (eq (car (get-text-property (point) 'face)) 'org-agenda-clocking)
       (let* ((beg (next-property-change (point)))
              (end (previous-property-change (+ (point) 1)))
@@ -55,6 +74,7 @@
 (progn
   (define-key sow-mode-keymap (kbd ";h") 'sow-transient-main)
   (define-key sow-mode-keymap (kbd ";a") 'sow-add-entry)
+  (define-key sow-mode-keymap (kbd ";p") 'sow-jump-last-entry)
   (define-key sow-mode-keymap (kbd ";e") 'sow-jump-entry))
 
 (if sow-evil-base
