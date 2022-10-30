@@ -42,6 +42,7 @@
       (let* ((beg (next-property-change (point)))
              (end (previous-property-change (+ (point) 1)))
              (match (buffer-substring-no-properties beg end)))
+        (widen)
         (goto-char (org-find-exact-headline-in-buffer match))
         (org-narrow-to-subtree)
         (org-show-subtree))
@@ -63,6 +64,15 @@
   (widen)
   (outline-hide-sublevels 1)
   (org-map-entries (lambda () (highlight-regexp (org-get-heading t t t t) 'org-agenda-clocking)) "LEVEL=1"))
+
+
+(defun sow-sort-entries ()
+  "Sort entries."
+  (widen)
+  (org-overview)
+  (goto-char (point-min))
+  (set-mark (point-max))
+  (org-sort-entries nil ?a))
 
 ;===============================================================================
 ;;; Operating Transient Menus
@@ -97,6 +107,7 @@
   (if sow-mode
       (progn
         (setq org-goto-interface (quote outline-path-completion))
+        (sow-sort-entries)
         (sow-setup-highlights))
     (progn
       (unhighlight-regexp t)
